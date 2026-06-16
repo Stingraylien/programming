@@ -1,0 +1,27 @@
+Flask==2.3.3
+pandas==2.3.3
+openpyxl==3.1.5
+requests==2.31.0
+
+# 檔案解析套件（Optional but recommended）
+PyPDF2==3.0.1
+python-pptx==0.6.21
+python-docx==0.8.11
+
+# 影像處理
+Pillow==10.0.1
+
+# 影片與語音生成
+# 注意：moviepy 需要系統已安裝 ffmpeg（Windows 可透過 imageio-ffmpeg 自動下載）
+moviepy==1.0.3
+imageio-ffmpeg>=0.4.7
+edge-tts>=6.1.9
+SpeechRecognition
+
+# 測試工具
+pytest==7.4.0
+pytest-cov==4.1.0
+
+# 程式碼品質工具
+black==23.9.1
+flake8==6.0.0
