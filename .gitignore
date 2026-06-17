@@ -30,3 +30,6 @@ X_shell/mole/Mole-main/
 # ===== 環境變數 / 密鑰 =====
 .env
 *.key
+
+# 已獨立成自己的 git 倉庫 (blackbox-courseware-generator)
+python/黑盒子產出完全教材/

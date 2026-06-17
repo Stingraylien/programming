@@ -1,5 +1,0 @@
-[app]
-startup_command = pip install -r requirements-production.txt && gunicorn --workers 4 --worker-class sync --bind 0.0.0.0 --timeout 600 "api.main:app"
-
-[python]
-version = 3.10.0
