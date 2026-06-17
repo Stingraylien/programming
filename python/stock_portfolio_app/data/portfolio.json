@@ -1,0 +1,20 @@
+[
+    {
+        "ticker": "0050.TW",
+        "quantity": 38.0,
+        "avg_cost": 62.21,
+        "currency": "TWD"
+    },
+    {
+        "ticker": "TSM.US",
+        "quantity": 2.0,
+        "avg_cost": 188.98,
+        "currency": "USD"
+    },
+    {
+        "ticker": "0056.TW",
+        "quantity": 3.0,
+        "avg_cost": 37.67,
+        "currency": "TWD"
+    }
+]

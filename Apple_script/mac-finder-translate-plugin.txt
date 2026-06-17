@@ -1,0 +1,84 @@
+-- MAC Finder Translate Plugin
+
+on run
+    tell application "Finder"
+        set selectedItems to selection
+        if selectedItems is {} then
+            display dialog "Please select a file to translate." buttons {"OK"} default button "OK"
+        else
+            set theFile to item 1 of selectedItems
+            set filePath to POSIX path of (theFile as alias)
+            set fileName to name of theFile
+            set fileExtension to name extension of theFile
+            set fileNameWithoutExtension to text 1 thru -((length of fileExtension) + 2) of fileName
+            
+            -- 呼叫Python腳本來處理翻譯
+            set pythonScript to "
+import os
+import sys
+from langdetect import detect
+from googletrans import Translator
+import tkinter as tk
+from tkinter import simpledialog
+
+def translate_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+    
+    # 檢測原始語言
+    source_lang = detect(content)
+    
+    # 詢問目標語言
+    root = tk.Tk()
+    root.withdraw()
+    target_lang = simpledialog.askstring('翻譯', '請輸入目標語言代碼 (例如: en, zh-tw, ja):')
+    
+    if not target_lang:
+        return
+    
+    # 翻譯內容
+    translator = Translator()
+    translated = translator.translate(content, src=source_lang, dest=target_lang)
+    
+    # 生成新檔案名稱
+    file_name = os.path.basename(file_path)
+    file_name_without_ext, file_ext = os.path.splitext(file_name)
+    new_file_name = f'{file_name_without_ext}_translated_{target_lang}{file_ext}'
+    new_file_path = os.path.join(os.path.dirname(file_path), new_file_name)
+    
+    # 儲存翻譯後的內容
+    with open(new_file_path, 'w', encoding='utf-8') as file:
+        file.write(translated.text)
+    
+    print(new_file_path)
+
+if __name__ == '__main__':
+    translate_file(sys.argv[1])
+"
+            
+            -- 將Python腳本保存到臨時文件
+            set tempFile to (path to temporary items as text) & "translate_script.py"
+            do shell script "echo " & quoted form of pythonScript & " > " & quoted form of tempFile
+            
+            -- 執行Python腳本
+            set pythonPath to "/usr/local/bin/python3"  -- 根據你的Python安裝路徑調整
+            set command to pythonPath & " " & quoted form of tempFile & " " & quoted form of filePath
+            set newFilePath to do shell script command
+            
+            -- 刪除臨時Python腳本
+            do shell script "rm " & quoted form of tempFile
+            
+            -- 在Finder中顯示新檔案
+            tell application "Finder"
+                reveal POSIX file newFilePath
+            end tell
+        end if
+    end tell
+end run
+
+on open theFiles
+    repeat with theFile in theFiles
+        set filePath to POSIX path of (theFile as alias)
+        -- 這裡可以加入處理多個文件的邏輯
+    end repeat
+end open

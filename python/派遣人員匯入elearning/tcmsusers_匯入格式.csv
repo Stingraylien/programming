@@ -1,0 +1,8 @@
+"$為描述表頭及範例標註，實際匯入資料請不要以此為開頭。"
+"$如是已經存在的使用者帳號，可以更改該使用者的資料，請填入正確的Acount。"
+"$如是要新增使用者，必填欄位包括Account、FirstName、Email、Password。"
+"$Groups欄位若該使用者屬於兩個以上的部門請以逗號分開。"
+"$如果Groups欄位填入的部門名稱是不存在的，則會自動建立此部門。"
+"$日期欄位的格式為yyyy/mm/dd，例如2006/02/06。"
+"$若欄位之資料以 0 為開頭(e.g.員工編號)，請在資料前面加上「'」，防止 0 被自動截掉。"
+EmployeeNumber,Account,FirstName,LastName,OnboardDate,Gender(female=0:male=1),Birthday,Email,GradeName,DutyName,Title,Groups(Separate with a comma),Company,OfficePhone,MobilePhone,Password,IsDisabled(no=0:yes=1),NTAccount,InductionDate

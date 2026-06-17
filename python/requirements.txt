@@ -1,0 +1,13 @@
+# Project dependencies for main apps (tkinter is provided by CPython on Windows; do not add it here)
+streamlit
+yfinance==0.2.40
+pandas
+plotly
+twstock
+requests
+Pillow
+beautifulsoup4
+XlsxWriter
+python-pptx
+edge-tts
+moviepy

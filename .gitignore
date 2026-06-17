@@ -1,0 +1,32 @@
+# ===== macOS =====
+.DS_Store
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.so
+
+# 虛擬環境
+venv/
+.venv/
+env/
+ENV/
+
+# 打包產物 (PyInstaller 等)
+build/
+dist/
+*.spec.bak
+
+# ===== 編輯器 / IDE =====
+.vscode/
+.idea/
+
+# ===== 大型壓縮檔 / 二進位 =====
+*.zip
+
+# 第三方下載工具 (Mole) 解壓內容
+X_shell/mole/Mole-main/
+
+# ===== 環境變數 / 密鑰 =====
+.env
+*.key

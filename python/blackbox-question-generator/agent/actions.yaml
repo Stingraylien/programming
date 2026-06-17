@@ -1,0 +1,17 @@
+actions:
+  - name: generate_question_bank
+    description: "Generate XuLink question bank from materials"
+    parameters:
+      - name: materials
+        type: file[]
+        description: "Teaching materials"
+      - name: question_types
+        type: string[]
+        description: "Question types"
+      - name: difficulty
+        type: string
+        description: "Difficulty level"
+      - name: language
+        type: string
+        description: "Language"
+    handler: "call_black_box_api"

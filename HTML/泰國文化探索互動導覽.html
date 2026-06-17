@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>泰國文化探索互動導覽</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - Overview: Text. Goal: Introduction. Method: HTML.
+        - Architectural Timeline: Interactive HTML table & textual descriptions. Goal: Explore historical periods. Method: HTML, JS for interaction. Key sites listed per period. Table data from report. NEW: LLM-powered "Deep Dive" for narrative explanation.
+        - Art - Evolution: Chart.js bar chart (Themes over time). Goal: Show art trends. Method: Chart.js, JS data based on report's phases.
+        - Art - Artists/Institutions: HTML cards, JS filter by city. Goal: Discover artists & venues. Method: HTML, JS. Data like opening hours included. NEW: LLM-powered "Creative Prompt" for artists.
+        - Cultural Festivals: HTML grid/list. Goal: Inform about festivals. Method: HTML.
+        - NO SVG/Mermaid confirmed. Focus on interactive HTML elements and Chart.js for visualizations. Unicode icons used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Fallback to system sans-serif if Inter not available */
+        }
+        .nav-link {
+            @apply px-4 py-2 text-sm font-medium text-gray-700 hover:bg-amber-100 hover:text-amber-700 rounded-md transition-colors duration-150;
+        }
+        .nav-link.active {
+            @apply bg-amber-500 text-white hover:bg-amber-600;
+        }
+        .section-title {
+            @apply text-3xl font-bold text-amber-700 mb-6 text-center;
+        }
+        .subsection-title {
+            @apply text-2xl font-semibold text-gray-700 mt-8 mb-4;
+        }
+        .card {
+            @apply bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300;
+        }
+        .tab-button {
+            @apply px-4 py-2 font-medium text-sm rounded-t-lg focus:outline-none transition-colors duration-150;
+        }
+        .tab-button.active {
+            @apply bg-amber-500 text-white;
+        }
+        .tab-button:not(.active) {
+            @apply bg-gray-200 hover:bg-gray-300 text-gray-700;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px; /* max-w-3xl */
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px; /* h-80 */
+            max-height: 400px; /* max-h-96 for larger screens, effectively h-96 */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .chart-container {
+                height: 400px; /* h-96 */
+            }
+        }
+        /* Ensure table headers are sticky for better readability on scroll within its container if table is long */
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            background-color: #f9fafb; /* bg-gray-50 */
+            z-index: 10;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #f59e0b; /* amber-500 */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-orange-50 text-gray-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-center items-center space-x-2 sm:space-x-4">
+            <a href="#overview" class="nav-link active" onclick="showSection('overview', this)">📜 概覽</a>
+            <a href="#architecture" class="nav-link" onclick="showSection('architecture', this)">🏛️ 建築時光軸</a>
+            <a href="#art" class="nav-link" onclick="showSection('art', this)">🖼️ 現代藝術探索</a>
+            <a href="#festivals" class="nav-link" onclick="showSection('festivals', this)">🎉 文化節慶</a>
+        </nav>
+    </header>
+
+    <main class="max-w-screen-xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <section id="overview" class="content-section">
+            <h1 class="section-title">泰國文化之旅：現代藝術、歷史與建築</h1>
+            <div class="bg-white p-6 rounded-lg shadow-lg prose max-w-none">
+                <p>泰國，這個常被譽為「微笑之國」的國家，不僅以其熱情好客聞名，更蘊藏著橫跨數世紀的豐富歷史、獨特的建築風格以及充滿活力的現代藝術景觀。本互動導覽旨在為尋求超越一般觀光、渴望深入理解泰國文化精髓的您，提供一份精心策劃的行程建議。從塑造國家認同的古老王國，到反映全球化社會的當代藝術表達，泰國展現了過去與現在之間引人入勝的交織。其寺廟是歷史的檔案，宮殿是建築的奇蹟，而畫廊則是通往其不斷演變的文化意識的窗戶。</p>
+                <p>請點擊上方導覽列，開始您的泰國文化探索之旅！</p>
+            </div>
+        </section>
+
+        <section id="architecture" class="content-section hidden">
+            <h1 class="section-title">🏛️ 建築時光軸：穿越泰國歷史</h1>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <p class="mb-6 text-center text-lg">泰國的建築史由獨特的時期組成，每個時期都為泰國建築和設計帶來了演變，同時保留了強烈的民族特色。常見元素包括高腳屋、傾斜瓦屋頂、鐘形佛塔（Chedi）和華麗細節。本區將帶您探索主要建築時期的特色與代表性地點。</p>
+
+                <div class="overflow-x-auto mb-8">
+                    <table class="min-w-full divide-y divide-gray-200 border border-gray-300">
+                        <thead class="bg-gray-50 sticky-header">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">建築時期</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">年代</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">主要建築特徵</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">主要影響</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="architecturePeriodsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="architectureDetailView" class="mt-6 p-6 bg-amber-50 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-amber-700 mb-2">選擇一個時期以查看詳細資訊</h3>
+                    <p id="detailContent">點擊上方表格中的「查看詳情」按鈕。</p>
+                    <button id="generateArchitectureDeepDive" class="mt-4 px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors duration-150 hidden" onclick="generateArchitectureDeepDive()">深度探索 ✨<span id="architectureLoadingSpinner" class="loading-spinner hidden"></span></button>
+                    <div id="architectureDeepDiveContent" class="mt-4 prose max-w-none text-gray-700"></div>
+                </div>
+                 <div class="mt-8 prose max-w-none">
+                    <h3 class="subsection-title">文化融合與精神核心</h3>
+                    <p>泰國建築的演變揭示了其國家認同的深層次特徵。從墮羅缽底到拉達那哥欣時期，泰國建築持續吸收並融合了來自高棉、中國、日本乃至西方的多元影響。儘管外部元素不斷被引入，泰國建築始終「保留著強烈的民族特色」。這種持續的吸收與本土化過程，表明泰國的文化認同並非靜態或封閉，而是一種動態、適應性強且具融合性的概念。</p>
+                    <p>此外，泰國歷史與建築的考察也揭示了其社會中持久的精神核心。在所有時期，大量的關鍵建築遺址都是佛教寺廟（wats）和宗教建築。佛教哲學深刻影響了素可泰藝術，即使阿瑜陀耶在18世紀被緬甸摧毀，佛塔卻常常倖存，帕南春寺的巨型佛像更是「始終得以修復」。這種對宗教建築的持續重視及其韌性，凸顯了佛教作為泰國社會和文化基礎的根深蒂固且持久的作用。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="art" class="content-section hidden">
+            <h1 class="section-title">🖼️ 現代藝術探索：變革的畫布</h1>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                 <p class="mb-6 text-center text-lg">泰國現代藝術的發展深受西方藝術知識與「泰國性」（Thainess）的結合影響，產生了獨特的藝術形式。國家藝術展覽一直是其發展的核心，反映了藝術風格和主題的演變。本區將引領您了解泰國現代藝術的發展脈絡、重要藝術家及藝術機構。</p>
+
+                <div class="mb-8">
+                    <h3 class="subsection-title text-center">泰國藝術主題演變趨勢</h3>
+                    <div class="chart-container">
+                        <canvas id="artThemesChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-600 text-center mt-2">此圖表根據報告中描述的國家藝術展覽各階段主題趨勢進行示意性呈現。</p>
+                </div>
+
+                <div class="my-8">
+                    <div class="flex justify-center mb-4 border-b border-gray-300">
+                        <button class="tab-button active" onclick="showArtTab('artists', this)">🎨 知名藝術家</button>
+                        <button class="tab-button" onclick="showArtTab('institutions', this)">🏛️ 藝術機構</button>
+                    </div>
+
+                    <div id="artists" class="art-tab-content">
+                        <h3 class="subsection-title">國家藝術家 & 當代先鋒</h3>
+                        <div id="artistList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            </div>
+                    </div>
+
+                    <div id="institutions" class="art-tab-content hidden">
+                        <h3 class="subsection-title">探索藝術場域</h3>
+                        <div class="mb-4 flex justify-center space-x-2">
+                            <button class="px-3 py-1.5 text-xs font-medium rounded-md bg-amber-200 text-amber-800 hover:bg-amber-300" onclick="filterInstitutions('all')">全部</button>
+                            <button class="px-3 py-1.5 text-xs font-medium rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="filterInstitutions('Bangkok')">曼谷</button>
+                            <button class="px-3 py-1.5 text-xs font-medium rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="filterInstitutions('Chiang Mai')">清邁</button>
+                        </div>
+                        <div id="institutionList" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           </div>
+                    </div>
+                </div>
+                 <div class="mt-8 prose max-w-none">
+                    <h3 class="subsection-title">藝術作為社會的鏡子</h3>
+                    <p>泰國現代和當代藝術的發展，特別是通過國家藝術展覽所呈現的，顯著反映了泰國社會和文化的變遷。藝術從早期較少涉足政治的階段，逐漸轉變為對社會現實、政治緊張和文化變革的深刻反思。這種演變表明，藝術在泰國社會中扮演著社會政治氣候晴雨表的重要角色。藝術家們的作品不僅是美學表達，更是對其所處時代的直接回應。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="festivals" class="content-section hidden">
+            <h1 class="section-title">🎉 文化節慶：體驗泰國活力</h1>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <p class="mb-6 text-center text-lg">泰國全年舉辦多種藝術節和文化活動，為體驗其豐富文化提供了獨特機會。這些節慶不僅充滿樂趣，更是了解泰國傳統與現代生活方式的絕佳途徑。</p>
+                <div id="festivalList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 text-sm text-gray-600">
+        <p>&copy; <span id="currentYear"></span> 泰國文化探索互動導覽。靈感源自報告內容。</p>
+    </footer>
+
+    <script>
+        // Helper function to show/hide sections and update nav link styles
+        function showSection(sectionId, navElement) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            navElement.classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
+        }
+
+        // Architecture Data
+        const architecturePeriods = [
+            {
+                name: "墮羅缽底 (Dvaravati)",
+                dates: "公元7-11世紀",
+                features: "高腳屋、預製木板、中央露台、傾斜瓦屋頂、鐘形佛塔（chedi）、華麗細節。",
+                influences: "未知（報告未詳述）",
+                sites: ["報告未列出具體地點，此時期為泰國早期文化奠基。"]
+            },
+            {
+                name: "素可泰 (Sukhothai)",
+                dates: "13-15世紀",
+                features: "風格化佛像、鐘形佛塔、高棉式佛塔、方形殿堂、主殿、講經堂、涼亭、神殿；象形佛塔、蓮花形佛塔。",
+                influences: "蘭卡宗上座部佛教、高棉美學、中國建築設計、日本藝術品。",
+                sites: [
+                    "素可泰歷史公園 (UNESCO)：瑪哈泰寺 (Wat Mahathat - 主佛塔呈閉合蓮花狀)、西昌寺 (Wat Si Chum - 華麗佛像)、沙西寺 (Wat Sra Si - 島上寺廟，行走佛)、帕普朗寺 (Wat Phra Phai Luang) 和西沙瓦寺 (Wat Si Sawai - 高棉風格佛塔)、沙潘欣寺 (Wat Saphan Hin - 高大佛像與美景)。"
+                ]
+            },
+            {
+                name: "阿瑜陀耶 (Ayutthaya)",
+                dates: "1351-1767",
+                features: "高大的高棉式佛塔（prangs）、鐘形佛塔（chedi）；磚或紅土材料，結構精巧，壁畫和雕像裝飾。",
+                influences: "高棉風格顯著，並融合本地元素。",
+                sites: [
+                    "阿瑜陀耶歷史公園 (UNESCO)：柴瓦塔那蘭寺 (Wat Chaiwatthanaram - 35米高棉式佛塔，象徵須彌山)、帕席桑佩寺 (Wat Phra Sri Sanphet - 曾存放皇家骨灰，重要宮殿寺廟)、亞那森寺 (Wat Yanasen - 主佛塔已修復)、帕南春寺 (Wat Phanan Choeng - 19米巨型鍍金佛像)、郭凱歐蘇塔蘭寺 (Wat Ko Kaew Suttharam - 戒堂壁畫描繪佛陀生平與歐洲人)。"
+                ]
+            },
+            {
+                name: "拉達那哥欣 (Rattanakosin)",
+                dates: "1782年至今",
+                features: "西方與中國影響融合的傳統泰國建築；精緻的門、屋頂、裝飾；複雜的馬賽克、格狀天花板、壁畫、鍍金雕像。",
+                influences: "西方、中國、阿瑜陀耶皇家宮殿設計。",
+                sites: [
+                    "曼谷：大皇宮 (Grand Palace) 與玉佛寺 (Wat Phra Kaew - 泰國最神聖寺廟，拉瑪堅壁畫)、臥佛寺 (Wat Pho - 巨型臥佛，泰國首所大學)、鄭王廟 (Wat Arun - 86米高棉式佛塔，瓷器馬賽克)、王權大京都大廈 (King Power Mahanakhon - 現代摩天樓，玻璃棧道)、曼谷國家博物館 (Bangkok National Museum - 展示泰國歷史文物)、吉姆湯普森之家 (Jim Thompson House - 傳統泰式建築群，亞洲藝術品)、古城 (Ancient City / Muang Boran - 露天博物館，泰國各地建築複製品)。"
+                ]
+            }
+        ];
+
+        let currentArchitecturePeriodIndex = -1; // To keep track of the currently displayed period for deep dive
+
+        function populateArchitectureTable() {
+            const tableBody = document.getElementById('architecturePeriodsTableBody');
+            tableBody.innerHTML = ''; // Clear existing rows
+            architecturePeriods.forEach((period, index) => {
+                const row = `
+                    <tr class="hover:bg-amber-50 transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${period.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${period.dates}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${period.features.substring(0, 50)}...</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${period.influences.substring(0, 50)}...</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick="showArchitectureDetail(${index})" class="text-amber-600 hover:text-amber-900">查看詳情</button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function showArchitectureDetail(index) {
+            const period = architecturePeriods[index];
+            currentArchitecturePeriodIndex = index; // Update current index
+            const detailView = document.getElementById('architectureDetailView');
+            const detailContent = document.getElementById('detailContent');
+            const generateButton = document.getElementById('generateArchitectureDeepDive');
+            const deepDiveContent = document.getElementById('architectureDeepDiveContent');
+            
+            detailView.querySelector('h3').textContent = `${period.name} (${period.dates})`;
+            let sitesHTML = '<ul>';
+            period.sites.forEach(site => {
+                sitesHTML += `<li class="ml-4 list-disc">${site}</li>`;
+            });
+            sitesHTML += '</ul>';
+
+            detailContent.innerHTML = `
+                <p class="mb-2"><strong>主要建築特徵：</strong> ${period.features}</p>
+                <p class="mb-2"><strong>主要影響：</strong> ${period.influences}</p>
+                <p class="mb-2"><strong>著名地點/範例：</strong></p>
+                ${sitesHTML}
+            `;
+            generateButton.classList.remove('hidden');
+            deepDiveContent.innerHTML = ''; // Clear previous deep dive content
+            detailView.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        async function generateArchitectureDeepDive() {
+            if (currentArchitecturePeriodIndex === -1) return;
+
+            const period = architecturePeriods[currentArchitecturePeriodIndex];
+            const deepDiveContentDiv = document.getElementById('architectureDeepDiveContent');
+            const loadingSpinner = document.getElementById('architectureLoadingSpinner');
+            const generateButton = document.getElementById('generateArchitectureDeepDive');
+
+            loadingSpinner.classList.remove('hidden');
+            generateButton.disabled = true;
+            deepDiveContentDiv.innerHTML = '<p class="text-center text-gray-500">正在生成深度探索內容，請稍候...</p>';
+
+            const prompt = `請為我詳細描述泰國 ${period.name} (${period.dates}) 時期的建築風格、文化背景及其對當時社會的影響。請以引人入勝的故事形式呈現，並提及至少三個具體的建築特色或例子。`;
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // Canvas will provide this
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    deepDiveContentDiv.innerHTML = `<h4 class="text-xl font-semibold text-amber-700 mt-4 mb-2">深度探索：${period.name}</h4><p>${text.replace(/\n/g, '<br>')}</p>`;
+                } else {
+                    deepDiveContentDiv.innerHTML = '<p class="text-red-500">生成內容失敗，請稍後再試。</p>';
+                }
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+                deepDiveContentDiv.innerHTML = '<p class="text-red-500">生成內容時發生錯誤，請檢查網路連線或稍後再試。</p>';
+            } finally {
+                loadingSpinner.classList.add('hidden');
+                generateButton.disabled = false;
+            }
+        }
+        
+        // Art Data
+        const artThemesData = {
+            labels: ["早期形式主義", "社會評論 (1987+)", "全球化與多元化 (1997+)", "佛教藝術再興 (1997+)", "文化議題 (2007+)", "持續陰鬱色調 (2007-17)"],
+            datasets: [{
+                label: '主題顯著性 (示意)',
+                data: [60, 70, 85, 75, 80, 65], // Arbitrary data for visual representation
+                backgroundColor: 'rgba(217, 119, 6, 0.6)', // amber-500 with opacity
+                borderColor: 'rgba(217, 119, 6, 1)', // amber-500
+                borderWidth: 1
+            }]
+        };
+
+        function renderArtThemesChart() {
+            const ctx = document.getElementById('artThemesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: artThemesData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: '顯著性評分 (示意)' }
+                        },
+                        x: {
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    const label = this.getLabelForValue(value);
+                                    return label.length > 10 ? label.substring(0,10) + '...' : label;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return artThemesData.labels[context.dataIndex] + ': ' + context.parsed.y;
+                                }
+                            }
+                        },
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        const artistsData = [
+            // National Artists
+            { name: "Fua Haripitak (1985)", focus: "現代藝術開創者，致力保護傳統藝術文化。", category: "national" },
+            { name: "Tawee Nandakwang (1990)", focus: "靜物、肖像和風景畫先驅。", category: "national" },
+            { name: "Sawasdi Tantisuk (1991)", focus: "作品多反映自然之美。", category: "national" },
+            { name: "Kamol Tassananchalee (1997)", focus: "認為藝術普世，概念無限，將平凡事物融入作品。", category: "national" },
+            { name: "Chakrabhand Posayakrit (2000)", focus: "從寫實肖像轉向木偶製作與文學場景描繪。", category: "national" },
+            { name: "Thawan Dachanee (2001)", focus: "以帝國主義般的狂暴和精確，將非理性形象物質化。", category: "national" },
+            { name: "Chalermchai Kositpipat (2011)", focus: "致力於為佛教事業繪畫。", category: "national" },
+            { name: "Vichoke Mukdamanee (2012)", focus: "探討新技術與現代生活中尋求平衡的掙扎。", category: "national" },
+            { name: "Panya Vijinthanasarn (2014)", focus: "認為科學對宗教構成威脅。", category: "national" },
+            // Contemporary Artists
+            { name: "Montien Boonma", focus: "當代藝術先驅，使用本土材料，反映宗教文化社會背景。", category: "contemporary" },
+            { name: "Araya Rasdjarmrearnsook", focus: "作品《思念祖母》，貢獻於實驗藝術風格。", category: "contemporary" },
+            { name: "Ruangsak Anuwatwimon", focus: "作品《98種植物》探討世界不宜居住主題。", category: "contemporary" },
+            { name: "Pen-Ek Ratanaruang", focus: "電影《小士兵》深刻批判泰國政治。", category: "contemporary_film" },
+            { name: "Tawang Wattuya", focus: "巨幅水彩畫鈔票《金錢》。", category: "contemporary" },
+            { name: "Wasinburee Supanichvoraparch", focus: "《龍戰車》以瓷質戰車表達戰爭與榮耀。", category: "contemporary" },
+            { name: "Lolay", focus: "雕塑反映受全球網絡文化「變異」的泰國青年。", category: "contemporary" },
+            { name: "Eiji Sumi", focus: "作品探討泰國政治、城市和社會問題。", category: "contemporary" },
+            { name: "Arin Rungjang", focus: "作品強調民主紀念碑的意識形態意義。", category: "contemporary" },
+            { name: "Mit Jai Inn", focus: "政治活動家藝術家，作品利用顏色代表政治分歧。", category: "contemporary" },
+            { name: "Apichatpong Weerasethakul", focus: "領先的下一代藝術家，作品《瘋狂的寧靜》。", category: "contemporary_film" }
+        ];
+
+        function populateArtists() {
+            const artistListDiv = document.getElementById('artistList');
+            artistListDiv.innerHTML = '';
+            artistsData.forEach((artist, index) => {
+                const card = `
+                    <div class="card">
+                        <h4 class="text-lg font-semibold text-amber-700 mb-1">${artist.name} ${artist.category === 'national' ? '🏅' : (artist.category === 'contemporary_film' ? '🎬' : '✨')}</h4>
+                        <p class="text-sm text-gray-600">${artist.focus}</p>
+                        <button class="mt-4 px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors duration-150" onclick="generateArtistPrompt(${index}, this)">靈感提示 ✨<span class="loading-spinner hidden" id="artistSpinner-${index}"></span></button>
+                        <div id="artistPrompt-${index}" class="mt-2 text-sm text-gray-700"></div>
+                    </div>
+                `;
+                artistListDiv.innerHTML += card;
+            });
+        }
+
+        async function generateArtistPrompt(index, buttonElement) {
+            const artist = artistsData[index];
+            const promptDiv = document.getElementById(`artistPrompt-${index}`);
+            const loadingSpinner = document.getElementById(`artistSpinner-${index}`);
+
+            loadingSpinner.classList.remove('hidden');
+            buttonElement.disabled = true;
+            promptDiv.innerHTML = '<p class="text-center text-gray-500">正在生成靈感提示，請稍候...</p>';
+
+            const prompt = `請根據泰國藝術家 ${artist.name} 的藝術風格和作品焦點：'${artist.focus}'，為我生成一個具啟發性的藝術創作提示或挑戰。這個提示應該鼓勵探索類似的主題或技巧。`;
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // Canvas will provide this
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    promptDiv.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
+                } else {
+                    promptDiv.innerHTML = '<p class="text-red-500">生成提示失敗，請稍後再試。</p>';
+                }
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+                promptDiv.innerHTML = '<p class="text-red-500">生成提示時發生錯誤，請檢查網路連線或稍後再試。</p>';
+            } finally {
+                loadingSpinner.classList.add('hidden');
+                buttonElement.disabled = false;
+            }
+        }
+
+        const institutionsData = [
+            // Bangkok
+            { name: "曼谷藝術文化中心 (BACC)", city: "Bangkok", focus: "當代藝術中心，免費入場 (特殊活動可能收費)。", hours: "週二至週日 10:00-20:00", ticket: "免費 (多數)", icon: "🏛️" },
+            { name: "曼谷當代藝術博物館 (MOCA Bangkok)", city: "Bangkok", focus: "泰國和國際當代藝術。", hours: "週三至週日 10:00-18:00 (週五至21:00)", ticket: "成人約14美元", icon: "🏛️" },
+            { name: "河城曼谷 (River City Bangkok)", city: "Bangkok", focus: "藝術與古董中心，畫廊、國際展覽。", hours: "每日 10:00-20:00", ticket: "依展覽而定", icon: "🛍️" },
+            { name: "國家美術館 (National Gallery of Thailand)", city: "Bangkok", focus: "泰國著名藝術家古典和當代作品。", hours: "報告未詳述", ticket: "報告未詳述", icon: "🖼️" },
+            { name: "吉姆湯普森之家 (Jim Thompson House)", city: "Bangkok", focus: "古泰式建築群，亞洲藝術品與古董。", hours: "每日 10:00-18:00 (週二休)", ticket: "成人200泰銖", icon: "🏠" },
+            { name: "Sathorn 11 Art Space", city: "Bangkok", focus: "支持泰國藝術家平台。", hours: "週三至週日 11:00-18:00", ticket: "免費", icon: "🎨" },
+            { name: "La Lanta Fine Art", city: "Bangkok", focus: "展出當代藝術。", hours: "週二至週六 10:00-19:00", ticket: "免費", icon: "🎨" },
+            { name: "Bangkok CityCity Gallery", city: "Bangkok", focus: "當代藝術畫廊。", hours: "週三至週六 13:00-18:00", ticket: "免費", icon: "🎨" },
+            { name: "SAC Gallery", city: "Bangkok", focus: "當代藝術畫廊。", hours: "週二至週六 11:00-18:00", ticket: "免費", icon: "🎨" },
+            { name: "100 Tonson Gallery", city: "Bangkok", focus: "專注當代泰國藝術。", hours: "週四至週日 11:00-19:00", ticket: "免費", icon: "🎨" },
+             { name: "The Jam Factory", city: "Bangkok", focus: "複合式文創空間含藝廊。", hours: "每日 10:00-20:00", ticket: "免費", icon: "🏭" },
+            { name: "Kathmandu Photo Gallery", city: "Bangkok", focus: "專注社會轉型與城市化攝影。", hours: "週二至週日 10:00-18:00", ticket: "免費", icon: "📷" },
+            { name: "Tang Contemporary Art", city: "Bangkok", focus: "位於河城曼谷內。", hours: "週二至週六 11:00-19:00", ticket: "免費", icon: "🎨" },
+            // Chiang Mai
+            { name: "MAIIAM當代美術館", city: "Chiang Mai", focus: "私人當代藝術博物館。", hours: "每日 10:00-18:00 (週二休)", ticket: "成人200泰銖", icon: "🏛️" },
+            { name: "La Luna Gallery", city: "Chiang Mai", focus: "殖民風格建築，展當代亞洲藝術家作品。", hours: "週二至週日 10:00-17:00", ticket: "免費", icon: "🎨" },
+            { name: "The Meeting Room Art Gallery", city: "Chiang Mai", focus: "為當地和國際藝術家提供平台。", hours: "每日 12:00-20:00", ticket: "免費", icon: "🎨" }
+        ];
+
+        function populateInstitutions(filter = 'all') {
+            const institutionListDiv = document.getElementById('institutionList');
+            institutionListDiv.innerHTML = '';
+            const filteredData = filter === 'all' ? institutionsData : institutionsData.filter(inst => inst.city === filter);
+            
+            if (filteredData.length === 0) {
+                institutionListDiv.innerHTML = `<p class="text-gray-600 col-span-full text-center">此分類下暫無機構資訊。</p>`;
+                return;
+            }
+
+            filteredData.forEach(inst => {
+                const card = `
+                    <div class="card">
+                        <h4 class="text-lg font-semibold text-amber-700 mb-1">${inst.icon} ${inst.name} <span class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">${inst.city}</span></h4>
+                        <p class="text-sm text-gray-700 mt-1 mb-1"><strong>聚焦：</strong> ${inst.focus}</p>
+                        <p class="text-xs text-gray-500"><strong>時間：</strong> ${inst.hours}</p>
+                        <p class="text-xs text-gray-500"><strong>門票：</strong> ${inst.ticket}</p>
+                    </div>
+                `;
+                institutionListDiv.innerHTML += card;
+            });
+
+            // Update filter button styles
+            const filterButtons = document.querySelectorAll('#institutions button[onclick^="filterInstitutions"]');
+            filterButtons.forEach(button => {
+                button.classList.remove('bg-amber-200', 'text-amber-800', 'hover:bg-amber-300');
+                button.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                if (button.textContent.toLowerCase().includes(filter) || (filter === 'all' && button.textContent === '全部')) {
+                    button.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    button.classList.add('bg-amber-200', 'text-amber-800', 'hover:bg-amber-300');
+                }
+            });
+        }
+        
+        function showArtTab(tabName, buttonElement) {
+            document.querySelectorAll('.art-tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabName).classList.remove('hidden');
+
+            document.querySelectorAll('#art .tab-button').forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+        }
+
+        function filterInstitutions(city) {
+            populateInstitutions(city);
+        }
+
+        // Festivals Data
+        const festivalsData = [
+            { name: "芒果藝術節 (Mango Art Festival)", timing: "通常5月 (曼谷河城)", description: "泰國最全面的藝術節之一，匯集藝術家、畫廊，並有論壇和工作坊。", icon:"🥭"},
+            { name: "泰國雙年展 (Thailand Biennale)", timing: "不定期 (如2023清萊)", description: "展示當代藝術在不同地區的發展，主題各異。", icon:"🌏"},
+            { name: "潑水節 (Songkran Festival)", timing: "4月13-15日", description: "泰國新年，大規模潑水活動，象徵淨化與更新。", icon:"💧"},
+            { name: "水燈節 (Loy Krathong)", timing: "通常11月", description: "將燭光小船放入水域，放下不幸，迎接好運。", icon:"🌸"},
+            { name: "清邁水燈節 (Yi Peng Lantern Festival)", timing: "與水燈節同期 (泰北，尤清邁)", description: "數千盞燈籠釋放空中，景象壯觀。", icon:"🏮"},
+            { name: "鬼臉節 (Phi Ta Khon Ghost Festival)", timing: "日期不定 (黎府)", description: "生動多彩，參與者戴精緻面具服裝遊行，帶來好運。", icon:"👻"},
+            { name: "世界泰拳錦標賽", timing: "通常3月", description: "推廣體育旅遊的重要賽事。", icon:"🥊"},
+            { name: "世界拜師泰拳儀式", timing: "3月 (阿瑜陀耶瑪哈泰寺)", description: "泰拳文化的重要活動。", icon:"🙏"}
+        ];
+
+        function populateFestivals() {
+            const festivalListDiv = document.getElementById('festivalList');
+            festivalListDiv.innerHTML = '';
+            festivalsData.forEach(festival => {
+                const card = `
+                    <div class="card">
+                        <h4 class="text-lg font-semibold text-amber-700 mb-1">${festival.icon} ${festival.name}</h4>
+                        <p class="text-sm text-gray-600 mb-1"><strong>時間：</strong> ${festival.timing}</p>
+                        <p class="text-sm text-gray-500">${festival.description}</p>
+                    </div>
+                `;
+                festivalListDiv.innerHTML += card;
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial section
+            showSection('overview', document.querySelector('.nav-link[href="#overview"]'));
+            
+            // Populate dynamic content
+            populateArchitectureTable();
+            renderArtThemesChart();
+            populateArtists();
+            populateInstitutions('all'); // Show all institutions initially
+            populateFestivals();
+
+            // Set current year in footer
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+            // Set initial art tab
+            showArtTab('artists', document.querySelector('#art .tab-button'));
+        });
+    </script>
+</body>
+</html>

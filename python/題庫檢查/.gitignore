@@ -1,0 +1,26 @@
+# Python 物件檔與快取
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 虛擬環境
+venv/
+env/
+.env
+
+# PyInstaller 打包產生的資料夾與檔案
+build/
+dist/
+*.spec
+
+# IDE 與編輯器設定
+.vscode/
+.idea/
+
+# 作業系統產生的檔案
+.DS_Store
+Thumbs.db
+
+# 專案測試與錯誤報告（如有）
+failed/
+output/

@@ -1,0 +1,1 @@
+function setup() {\n  createCanvas(400, 400);\n}\n\nfunction draw() {\n  background(220);\n  circle(width / 2, height / 2, 100);\n}\n

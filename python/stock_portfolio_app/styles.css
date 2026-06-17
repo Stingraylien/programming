@@ -1,0 +1,59 @@
+/* Global Settings */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Main Container Background - optional if using Streamlit's dark theme, 
+   but this enforces a deep blue/black premium feel */
+.stApp {
+    background-color: #0E1117; 
+}
+
+/* Glassmorphism Card Style for Metrics and Data */
+div[data-testid="metric-container"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1rem;
+    color: #ffffff;
+}
+
+div[data-testid="metric-container"]:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+/* Custom Table Styling */
+div[data-testid="stDataFrame"] {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 10px;
+}
+
+/* Profit/Loss Colors */
+.positive-value {
+    color: #00E676; /* Neon Green */
+    font-weight: 600;
+}
+
+.negative-value {
+    color: #FF1744; /* Neon Red */
+    font-weight: 600;
+}
+
+/* Sidebar Styling */
+section[data-testid="stSidebar"] {
+    background-color: #161B22;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Headers */
+h1, h2, h3 {
+    color: #F0F6FC;
+    font-weight: 700;
+}

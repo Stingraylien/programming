@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../p5_js"
+		},
+		{
+			"path": "../p5_js/P5_sample"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"liveServer.settings.port": 5501
+	}
+}

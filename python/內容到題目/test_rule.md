@@ -1,0 +1,69 @@
+# 題庫建立規則
+    "$"開頭的為註解 可跳過 整列不計
+    欄 A 為題型代碼 "#Qtype"代碼必須包含中括弧
+        是非題: "[TrueFalse]"
+        單選題: "[SingleChoice]"
+        複選題: "[MultipleChoice]"
+        填充題: "[FillInBlank]"
+        問答題: "[Essay]"
+    欄 B 為題目 "Subject"
+    欄 C 為選項 "Option"
+    欄 D 為權重 "Weight"
+    欄 E 為難度 "Difficulty"
+    欄 F 為答案 "Answer" 
+    欄 G：複選限制類型 (Option Limit Type) 與 欄 A 複選題 [MultipleChoice] 搭配使用
+        0：不限制（預設值，使用者可以任意選擇）。
+        1：最高限制（最多只能選幾項）。
+        2：最低限制（最少必須選幾項）。
+    欄 H：複選限制個數 (Option Limit Count) 與 欄 G 搭配使用
+        例如：如果欄 G 填了 1，欄 H 填了 3，表示這題「最多只能選 3 個答案」。
+        如果這是一般單選題 [SingleChoice] 或是不限項目的複選題 [MultipleChoice]，這兩欄通常會維持 0 或留空。
+    欄 I 為文字敘述說明 "Analyze(for QBank)
+    欄 J 為是否隨機 "NoRandom(for QBank)"
+
+新增是非題時,
+    第一行必填欄位包括
+        #QTYPE(填入題型代碼 [TrueFalse] ),
+        Subject(即題目),
+        Weight(分數,可以任填),
+        Difficulty(難度, 需介於1~5)
+    第二行以後為選項,必填欄位包括
+        Option(即選項,請依次序每行填入一個選項,最多2個選項),
+        Yes/No/Answer(請在正確解答的那一行填入y)
+
+新增單選題時,
+    第一行必填欄位包括
+        #QTYPE(填入題型代碼[SingleChoice]),
+        Subject(即題目),
+        Weight(分數,可以任填),
+        Difficulty(難度,需介於1~5)
+    第二行以後為選項,必填欄位包括
+        Option(即選項,請依次序每行填入一個選項,最多9個選項),
+        Yes/No/Answer(請在正確解答的那一行填入y)
+新增複選題時,
+    第一行必填欄位包括
+        #QTYPE(填入題型代碼[MultipleChoice]),
+        Subject(即題目),
+        Weight(分數,可以任填),
+        Difficulty(難度,需介於1~5)
+    第二行以後為選項,必填欄位包括
+        Option(即選項,請依次序每行填入一個選項,最多9個選項),
+        Yes/No/Answer(請在正確解答的那幾行填入y)
+新增填充題時,
+    第一行必填欄位包括
+        #QTYPE(填入題型代碼[FillInBlank]),
+        Subject(即題目),
+        Weight(分數,可以任填),
+        Difficulty(難度,需介於1~5)
+    第二行為答案,必填欄位包括
+        Yes/No/Answer(填入答案,若有數個答案，請以";"分開)
+新增問答題時,
+    第一行必填欄位包括
+        #QTYPE(填入題型代碼[Essay]),
+        Subject(即題目),
+        Weight(分數,可以任填),
+        Difficulty(難度,需介於1~5)
+    第二行為參考答案,必填欄位包括
+        Yes/No/Answer(填入參考答案)
+
+當試卷屬性頁有勾選"讓題目選項順序隨機"時,您可將單選題或複選題的NoRandom(for QBank)設定為1(1:表示此題選項不隨機排序)或0(0:表示此題選項可隨機排序)
